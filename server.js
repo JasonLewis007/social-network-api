@@ -1,26 +1,16 @@
-const express = require('express');
-const mongoose = require("mongoose");
+const express = require("express");
+const db = require("./config/config");
+const routes = require("./routes");
 
+const PORT = 3001;
 const app = express();
-const PORT = process.env.PORT || 3001;
 
-app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static('public'));
+app.use(express.json());
+app.use(routes);
 
-// if MONGODB_URI exists, connect to that DB
-// otherwise short-circuit to local MongoDB server's DB
-// MongoDB finds and connects to DB if exists or creates if it doesn't
-mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost/social-network-api", {
-    useFindAndModify: false,
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useCreateIndex: true,
+db.once("open", () => {
+  app.listen(PORT, () => {
+    console.log(`API server running on port ${PORT}!`);
+  });
 });
-
-// log mongo queries being executed
-mongoose.set("debug", true);
-
-app.use(require('./routes'));
-
-app.listen(PORT, () => console.log(`Connected on localhost:${PORT}`));
